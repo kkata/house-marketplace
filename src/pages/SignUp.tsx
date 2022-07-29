@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { db } from "../firebase.config";
+import { auth } from "../firebase.config"; // for local
+// import { getAuth } from "firebase/auth"; // for production
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
 
@@ -21,6 +25,33 @@ export const SignUp = () => {
     }));
   };
 
+  const onSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+
+    try {
+      // const auth = getAuth(); // for production
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const user = userCredential.user;
+
+      // HELP: "if" is for auth.currentUser that is null
+      if (auth.currentUser) {
+        updateProfile(auth.currentUser, {
+          displayName: name,
+        });
+      }
+
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <div className="pageContainer">
@@ -28,7 +59,7 @@ export const SignUp = () => {
           <p className="pageHeader">Welcome Back!</p>
         </header>
 
-        <form>
+        <form onSubmit={onSubmit}>
           <input
             type="text"
             className="nameInput"
