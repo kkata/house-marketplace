@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { auth } from "../firebase.config"; // for local
 // import { getAuth } from "firebase/auth"; // for production
@@ -45,6 +46,17 @@ export const SignUp = () => {
           displayName: name,
         });
       }
+
+      const removePassword = () => {
+        const { password, ...rest } = { ...formData };
+        return rest;
+      };
+      const addTimestamp = () => {
+        return { ...removePassword(), timestamp: serverTimestamp() };
+      };
+      const fomDataCopy = addTimestamp();
+
+      await setDoc(doc(db, "users", user.uid), fomDataCopy);
 
       navigate("/");
     } catch (error) {
