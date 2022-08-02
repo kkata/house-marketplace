@@ -4,10 +4,11 @@ import { toast } from "react-toastify";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
-import { auth } from "../firebase.config"; // for local
-// import { getAuth } from "firebase/auth"; // for production
+// import { auth } from "../firebase.config"; // for local
+import { getAuth } from "firebase/auth"; // for production
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
+import { OAuth } from "../components/OAuth";
 
 export const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +32,7 @@ export const SignUp = () => {
     e.preventDefault();
 
     try {
-      // const auth = getAuth(); // for production
+      const auth = getAuth(); // for production
 
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -118,7 +119,7 @@ export const SignUp = () => {
           </div>
         </form>
 
-        {/* Google Auth */}
+        <OAuth />
 
         <Link to="/sign-in" className="registerLink">
           Sign In Instead
