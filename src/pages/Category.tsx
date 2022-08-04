@@ -16,7 +16,8 @@ import {
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
 import { Spinner } from "../components/Spinner";
-import { ListingsItemType } from "../components/type";
+import { ListingItem } from "../components/ListingItem";
+import { ListingsItemType } from "../type";
 
 // ref. https://maku.blog/p/bw9kv6g/
 const listingsItemConverter: FirestoreDataConverter<ListingsItemType> = {
@@ -61,6 +62,9 @@ export const Category = () => {
 
   const params = useParams();
 
+  const onEdit = (id: string) => {};
+  const onDelete = (id: string, name: string) => {};
+
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -103,7 +107,12 @@ export const Category = () => {
           <main>
             <ul className="categoryListings">
               {listings.map((listing) => (
-                <h3 key={listing.id}>{listing.data.name}</h3>
+                <ListingItem
+                  key={listing.id}
+                  listing={listing}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
               ))}
             </ul>
           </main>
