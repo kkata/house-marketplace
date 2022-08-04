@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
+import { toast } from "react-toastify";
 
 const initialFormState = {
   type: "rent",
@@ -57,8 +58,52 @@ export const CreateListing = () => {
     return unsubscribe;
   }, [auth, navigate]);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setLoading(true);
+
+    if (discountedPrice >= regularPrice) {
+      setLoading(false);
+      toast.error("Discounted price must be less than regular price");
+      return;
+    }
+
+    if (Object.keys(images).length > 6) {
+      setLoading(false);
+      toast.error("Maximum 6 images allowed");
+      return;
+    }
+
+    let geolocation = {
+      lat: latitude,
+      lng: longitude,
+    };
+    let location;
+
+    if (geolocationEnabled) {
+      const response = await fetch(
+        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_POSITIONSTACK_API_KEY}&query=${address}`
+      );
+      const data = await response.json();
+
+      geolocation.lat = data.data[0]?.latitude ?? 0;
+      geolocation.lng = data.data[0]?.longitude ?? 0;
+
+      location = data.data[0] ? data.data[0]?.label : undefined;
+
+      if (location === undefined || location.includes("undefined")) {
+        setLoading(false);
+        toast.error("Please enter a correct address");
+        return;
+      }
+    } else {
+      geolocation.lat = latitude;
+      geolocation.lng = longitude;
+      location = address;
+    }
+
+    setLoading(false);
   };
 
   const onMutate = (
