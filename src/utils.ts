@@ -37,7 +37,7 @@ export const listingsItemConverter: FirestoreDataConverter<ListingsItemType> = {
         discountedPrice: data.discountedPrice,
         location: data.location,
         geolocation: data.geolocation,
-        imageUrls: data.imageUrls,
+        imgUrls: data.imgUrls,
         timestamp: data.timestamp,
       },
     };

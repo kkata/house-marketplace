@@ -6,6 +6,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
@@ -147,7 +148,7 @@ export const CreateListing = () => {
       });
     };
 
-    const imageUrls = await Promise.all(
+    const imgUrls = await Promise.all(
       Array.from(images).map((image) => storeImage(image))
     ).catch(() => {
       setLoading(false);
@@ -155,9 +156,35 @@ export const CreateListing = () => {
       return;
     });
 
-    console.log(imageUrls);
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      geolocation,
+      timestamp: serverTimestamp(),
+    };
 
+    // 素直にdeleteできないのは最初に型定義をしていないから...
+    let formDataFormatted;
+    const {
+      ["images"]: _1,
+      ["address"]: _2,
+      ...formDataCopyWithoutImagesAndAddress
+    } = formDataCopy;
+    formDataFormatted = formDataCopyWithoutImagesAndAddress;
+    formDataFormatted = location
+      ? { ...formDataFormatted, location }
+      : formDataFormatted;
+
+    if (!formDataFormatted.offer) {
+      const { ["discountedPrice"]: _1, ...formDataCopyWithoutDiscountedPrice } =
+        formDataFormatted;
+      formDataFormatted = formDataCopyWithoutDiscountedPrice;
+    }
+
+    const docRef = await addDoc(collection(db, "listings"), formDataFormatted);
     setLoading(false);
+    toast.success("Listing created");
+    navigate(`/category/${formDataFormatted.type}/${docRef.id}`);
   };
 
   const onMutate = (

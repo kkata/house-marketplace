@@ -18,7 +18,7 @@ export const ListingItem = ({ listing, onEdit, onDelete }: PropsType) => {
         className="categoryListingLink"
       >
         <img
-          src={listing.data.imageUrls[0]}
+          src={listing.data.imgUrls[0]}
           alt={listing.data.name}
           className="categoryListingImg"
         />
