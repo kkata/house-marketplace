@@ -5,7 +5,7 @@ import {
   serverTimestamp,
   SnapshotOptions,
 } from "firebase/firestore";
-import { ListingsItemType } from "./type";
+import { ListingsItemDataType, ListingsItemType } from "./type";
 
 // ref. https://maku.blog/p/bw9kv6g/
 export const listingsItemConverter: FirestoreDataConverter<ListingsItemType> = {
@@ -40,6 +40,39 @@ export const listingsItemConverter: FirestoreDataConverter<ListingsItemType> = {
         imgUrls: data.imgUrls,
         timestamp: data.timestamp,
       },
+    };
+  },
+};
+
+export const listingsConverter: FirestoreDataConverter<ListingsItemDataType> = {
+  toFirestore(item: ListingsItemDataType): DocumentData {
+    return {
+      ...item,
+      timestamp: serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): ListingsItemDataType {
+    const data = snapshot.data(options); //  as ListingsItemDataType にしたいけどしない
+    return {
+      //  as ListingsItemDataType をしていないので羅列している
+      name: data.name,
+      type: data.type,
+      userRef: data.userRef,
+      bedrooms: data.bedrooms,
+      bathrooms: data.bathrooms,
+      parking: data.parking,
+      furnished: data.furnished,
+      offer: data.offer,
+      regularPrice: data.regularPrice,
+      discountedPrice: data.discountedPrice,
+      location: data.location,
+      geolocation: data.geolocation,
+      imgUrls: data.imgUrls,
+      timestamp: data.timestamp,
     };
   },
 };
