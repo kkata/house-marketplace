@@ -31,7 +31,7 @@ const initialFormState = {
 };
 
 export const CreateListing = () => {
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState(initialFormState);

@@ -11,8 +11,8 @@ export type ListingsItemDataType = {
   discountedPrice: number;
   location: string;
   geolocation: {
-    lat: string;
-    lng: string;
+    lat: number;
+    lng: number;
   };
   imgUrls: string[];
   timestamp: string;
