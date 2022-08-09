@@ -12,6 +12,7 @@ import { CreateListing } from "./pages/CreateListing";
 import { Navbar } from "./components/Navbar";
 import { PrivateRoute } from "./components/PrivateRoute";
 import { Listing } from "./pages/Listing";
+import { Contact } from "./pages/Contact";
 
 export const App = () => {
   return (
@@ -32,6 +33,7 @@ export const App = () => {
             path="/category/:categoryName/:listingId"
             element={<Listing />}
           />
+          <Route path="contact/:landlordId" element={<Contact />} />
         </Routes>
         <Navbar />
       </Router>

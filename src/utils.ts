@@ -5,7 +5,7 @@ import {
   serverTimestamp,
   SnapshotOptions,
 } from "firebase/firestore";
-import { ListingsItemDataType, ListingsItemType } from "./type";
+import { ListingsItemDataType, ListingsItemType, UsersType } from "./type";
 
 // ref. https://maku.blog/p/bw9kv6g/
 export const listingsItemConverter: FirestoreDataConverter<ListingsItemType> = {
@@ -72,6 +72,28 @@ export const listingsConverter: FirestoreDataConverter<ListingsItemDataType> = {
       location: data.location,
       geolocation: data.geolocation,
       imgUrls: data.imgUrls,
+      timestamp: data.timestamp,
+    };
+  },
+};
+
+export const usersConverter: FirestoreDataConverter<UsersType> = {
+  toFirestore(item: UsersType): DocumentData {
+    return {
+      ...item,
+      timestamp: serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): UsersType {
+    const data = snapshot.data(options);
+    return {
+      displayName: data.displayName,
+      email: data.email,
+      name: data.name,
       timestamp: data.timestamp,
     };
   },

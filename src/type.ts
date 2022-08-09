@@ -22,3 +22,10 @@ export type ListingsItemType = {
   id: string;
   data: ListingsItemDataType;
 };
+
+export type UsersType = {
+  displayName?: string;
+  email: string;
+  name: string;
+  timestamp: string;
+};
