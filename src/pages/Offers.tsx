@@ -7,6 +7,8 @@ import {
   where,
   orderBy,
   limit,
+  QueryDocumentSnapshot,
+  startAfter,
 } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
@@ -18,6 +20,9 @@ import { listingsItemConverter } from "../utils";
 export const Offers = () => {
   const [listings, setListings] = useState<ListingsItemType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastFetchedListing, setLastFetchedListing] =
+    useState<QueryDocumentSnapshot>();
+  const [isListedAll, setIsListedAll] = useState(true); // FIXME: when the last listing is fetched, set this to false
 
   const params = useParams();
 
@@ -38,9 +43,14 @@ export const Offers = () => {
         );
         const querySnap = await getDocs(q);
 
+        const lastVisible = querySnap.docs[querySnap.docs.length - 1];
+
+        setLastFetchedListing(lastVisible);
+
         const listings = querySnap.docs.map((doc) => doc.data());
 
         setListings(listings);
+        setIsListedAll(querySnap.empty);
         setLoading(false);
       } catch (error) {
         toast.error("Could not fetch listings");
@@ -48,6 +58,35 @@ export const Offers = () => {
     };
     fetchListings();
   }, []);
+
+  // Pagination Load More
+  const onFetchMoreListings = async () => {
+    try {
+      const listingRef = collection(db, "listings").withConverter(
+        listingsItemConverter
+      );
+      const q = query(
+        listingRef,
+        where("offer", "==", true),
+        orderBy("timestamp", "desc"),
+        startAfter(lastFetchedListing),
+        limit(10)
+      );
+      const querySnap = await getDocs(q);
+
+      const lastVisible = querySnap.docs[querySnap.docs.length - 1];
+
+      setLastFetchedListing(lastVisible);
+
+      const listings = querySnap.docs.map((doc) => doc.data());
+
+      setListings((prevListings) => [...prevListings, ...listings]);
+      setIsListedAll(querySnap.empty);
+      setLoading(false);
+    } catch (error) {
+      toast.error("Could not fetch listings");
+    }
+  };
 
   return (
     <div className="category">
@@ -71,6 +110,17 @@ export const Offers = () => {
               ))}
             </ul>
           </main>
+
+          <br />
+          <br />
+
+          {isListedAll ? (
+            <p>No More Listings</p>
+          ) : (
+            <p className="loadMore" onClick={onFetchMoreListings}>
+              Load More
+            </p>
+          )}
         </>
       ) : (
         <p>There are no current offers</p>
