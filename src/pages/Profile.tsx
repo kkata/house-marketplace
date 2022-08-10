@@ -1,11 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { getAuth, updateProfile } from "firebase/auth";
-import { updateDoc, doc } from "firebase/firestore";
+import {
+  updateDoc,
+  doc,
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
 import arrowRight from "../assets/svg/keyboardArrowRightIcon.svg";
 import homeIcon from "../assets/svg/homeIcon.svg";
+import { listingsItemConverter } from "../utils";
+import { ListingsItemType } from "../type";
+import { ListingItem } from "../components/ListingItem";
 
 type formDataType = {
   name: string;
@@ -14,6 +26,8 @@ type formDataType = {
 
 export const Profile = () => {
   const auth = getAuth();
+  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState<ListingsItemType[]>([]);
   const [changeDetails, setChangeDetails] = useState(false);
   const [formData, setFormData] = useState<formDataType>({
     name: auth.currentUser?.displayName || "",
@@ -24,9 +38,41 @@ export const Profile = () => {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchListings = async () => {
+      const listingsRef = collection(db, "listings").withConverter(
+        listingsItemConverter
+      );
+      const q = query(
+        listingsRef,
+        where("userRef", "==", auth.currentUser?.uid),
+        orderBy("timestamp", "desc")
+      );
+      const querySnap = await getDocs(q);
+
+      const listings = querySnap.docs.map((doc) => doc.data());
+
+      setListings(listings);
+      setLoading(false);
+    };
+    fetchListings();
+  }, [auth.currentUser?.uid]);
+
   const onLogout = () => {
     auth.signOut();
     navigate("/");
+  };
+
+  // FIXME: these functions are not necessary here?
+  const onEdit = (id: string) => {};
+  // FIXME: just delete firestore, not storage. images are not deleted.
+  const onDelete = async (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
+      await deleteDoc(doc(db, "listings", id));
+      const updatedListings = listings.filter((listing) => listing.id !== id);
+      setListings(updatedListings);
+      toast.success("Successfully deleted listing");
+    }
   };
 
   const onSubmit = async () => {
@@ -102,6 +148,22 @@ export const Profile = () => {
           <p>Sell or rent your home</p>
           <img src={arrowRight} alt="arrow right" />
         </Link>
+
+        {!loading && listings?.length > 0 && (
+          <>
+            <p className="listingText">Your Listings</p>
+            <ul className="listingsList">
+              {listings.map((listing) => (
+                <ListingItem
+                  key={listing.id}
+                  listing={listing}
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                />
+              ))}
+            </ul>
+          </>
+        )}
       </main>
     </div>
   );
