@@ -1,3 +1,5 @@
+import { FieldValue } from "firebase/firestore";
+
 export type ListingsItemDataType = {
   name: string;
   type: string;
@@ -15,7 +17,7 @@ export type ListingsItemDataType = {
     lng: number;
   };
   imgUrls: FileList;
-  timestamp: string;
+  timestamp: FieldValue;
 };
 
 export type ListingsItemType = {
