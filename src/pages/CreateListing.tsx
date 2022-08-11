@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
 import { toast } from "react-toastify";
-import { v4 as uuidv4 } from "uuid";
+import { storeImage } from "../utils";
 
 const initialFormState = {
   type: "rent",
@@ -32,7 +26,7 @@ const initialFormState = {
 
 export const CreateListing = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
+  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState(initialFormState);
@@ -112,42 +106,6 @@ export const CreateListing = () => {
       geolocation.lng = longitude;
       location = address;
     }
-
-    // Store images in firebase storage
-    const storeImage = async (image: File) => {
-      return new Promise((resolve, reject) => {
-        const storage = getStorage();
-        const fileName = `${auth.currentUser?.uid}-${image.name}-${uuidv4()}`;
-
-        const storageRef = ref(storage, "images/" + fileName);
-
-        const uploadTask = uploadBytesResumable(storageRef, image);
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log("Upload is " + progress + "% done");
-            switch (snapshot.state) {
-              case "paused":
-                console.log("Upload is paused");
-                break;
-              case "running":
-                console.log("Upload is running");
-                break;
-            }
-          },
-          (error) => {
-            reject(error);
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              resolve(downloadURL);
-            });
-          }
-        );
-      });
-    };
 
     const imgUrls = await Promise.all(
       Array.from(images).map((image) => storeImage(image))
