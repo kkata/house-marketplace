@@ -55,7 +55,7 @@ export const Listing = () => {
           pagination={{ clickable: true }}
           className="swiper-container"
         >
-          {listing.imgUrls.map((item, index) => (
+          {Array.from(listing.imgUrls).map((item, index) => (
             <SwiperSlide key={index}>
               <div
                 style={{

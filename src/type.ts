@@ -14,7 +14,7 @@ export type ListingsItemDataType = {
     lat: number;
     lng: number;
   };
-  imgUrls: string[];
+  imgUrls: FileList;
   timestamp: string;
 };
 
