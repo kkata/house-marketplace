@@ -33,6 +33,7 @@ const initialFormState = {
 };
 
 export const EditListing = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listing, setListing] = useState<ListingsItemDataType>();
@@ -209,8 +210,8 @@ export const EditListing = () => {
     // 素直にdeleteできないのは最初に型定義をしていないから...
     let formDataFormatted;
     const {
-      ["images"]: _1,
-      ["address"]: _2,
+      images: _1,
+      address: _2,
       ...formDataCopyWithoutImagesAndAddress
     } = formDataCopy;
     formDataFormatted = formDataCopyWithoutImagesAndAddress;
@@ -219,7 +220,7 @@ export const EditListing = () => {
       : formDataFormatted;
 
     if (!formDataFormatted.offer) {
-      const { ["discountedPrice"]: _1, ...formDataCopyWithoutDiscountedPrice } =
+      const { discountedPrice: _1, ...formDataCopyWithoutDiscountedPrice } =
         formDataFormatted;
       formDataFormatted = formDataCopyWithoutDiscountedPrice;
     }

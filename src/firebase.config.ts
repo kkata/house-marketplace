@@ -1,7 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+/* eslint-disable */
+import { connectStorageEmulator } from "firebase/storage";
+import { connectAuthEmulator } from "firebase/auth";
+import { connectFirestoreEmulator } from "firebase/firestore";
+/* eslint-enable */
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,9 +23,9 @@ initializeApp(firebaseConfig);
 
 export const db = getFirestore();
 export const auth = getAuth();
-const storage = getStorage();
+getStorage();
 
-// if (process.env.NODE_ENV !== "production") {
+// if (process.env.NODE_ENV === "development") {
 //   connectFirestoreEmulator(db, "localhost", 8080);
 //   connectAuthEmulator(auth, "http://localhost:9099");
 //   connectStorageEmulator(storage, "localhost", 9199);

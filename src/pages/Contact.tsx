@@ -9,6 +9,7 @@ import { usersConverter } from "../utils";
 export const Contact = () => {
   const [message, setMessage] = useState("");
   const [landlord, setLandlord] = useState<UsersType | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams();
 
   const params = useParams();

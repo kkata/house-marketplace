@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import {
   collection,
   getDocs,
@@ -23,8 +22,6 @@ export const Offers = () => {
   const [lastFetchedListing, setLastFetchedListing] =
     useState<QueryDocumentSnapshot>();
   const [isListedAll, setIsListedAll] = useState(true); // FIXME: when the last listing is fetched, set this to false
-
-  const params = useParams();
 
   const onEdit = (id: string) => {};
   const onDelete = (id: string, name: string) => {};
