@@ -64,7 +64,9 @@ export const Profile = () => {
   };
 
   // FIXME: these functions are not necessary here?
-  const onEdit = (id: string) => {};
+  const onEdit = (id: string) => {
+    navigate(`/edit-listing/${id}`);
+  };
   // FIXME: just delete firestore, not storage. images are not deleted.
   const onDelete = async (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
