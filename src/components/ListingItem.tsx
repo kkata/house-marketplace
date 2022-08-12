@@ -6,8 +6,8 @@ import bathtubIcon from "../assets/svg/bathtubIcon.svg";
 import { ListingsItemType } from "../type";
 type PropsType = {
   listing: ListingsItemType;
-  onEdit: (id: string) => void;
-  onDelete: (id: string, name: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string, name: string) => void;
 };
 
 export const ListingItem = ({ listing, onEdit, onDelete }: PropsType) => {

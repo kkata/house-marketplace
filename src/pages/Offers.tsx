@@ -23,9 +23,6 @@ export const Offers = () => {
     useState<QueryDocumentSnapshot>();
   const [isListedAll, setIsListedAll] = useState(true); // FIXME: when the last listing is fetched, set this to false
 
-  const onEdit = (id: string) => {};
-  const onDelete = (id: string, name: string) => {};
-
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -98,12 +95,7 @@ export const Offers = () => {
           <main>
             <ul className="categoryListings">
               {listings.map((listing) => (
-                <ListingItem
-                  key={listing.id}
-                  listing={listing}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
+                <ListingItem key={listing.id} listing={listing} />
               ))}
             </ul>
           </main>

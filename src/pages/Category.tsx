@@ -25,9 +25,6 @@ export const Category = () => {
 
   const params = useParams();
 
-  const onEdit = (id: string) => {};
-  const onDelete = (id: string, name: string) => {};
-
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -102,12 +99,7 @@ export const Category = () => {
           <main>
             <ul className="categoryListings">
               {listings.map((listing) => (
-                <ListingItem
-                  key={listing.id}
-                  listing={listing}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
+                <ListingItem key={listing.id} listing={listing} />
               ))}
             </ul>
           </main>
