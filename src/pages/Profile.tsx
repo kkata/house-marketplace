@@ -117,15 +117,16 @@ export const Profile = () => {
       <main>
         <div className="profileDetailsHeader">
           <p className="profileDetailsText">Personal Details</p>
-          <p
+          <button
             className="changePersonalDetails"
             onClick={() => {
               changeDetails && onSubmit();
               setChangeDetails((prevState) => !prevState);
             }}
+            type="button"
           >
             {changeDetails ? "done" : "change"}
-          </p>
+          </button>
         </div>
 
         <div className="profileCard">
