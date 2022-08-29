@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { getAuth, updateProfile } from "firebase/auth";
+import { getAuth, updateEmail, updateProfile } from "firebase/auth";
 import {
   updateDoc,
   doc,
@@ -80,13 +80,17 @@ export const Profile = () => {
   const onSubmit = async () => {
     try {
       if (!auth.currentUser) return alert("User not logged in");
-      if (auth.currentUser.displayName !== name) {
-        // Update display name in firebase
-        await updateProfile(auth.currentUser, { displayName: name });
+      const userRef = doc(db, "users", auth.currentUser.uid);
 
-        // Update in firestore
-        const userRef = doc(db, "users", auth.currentUser.uid);
+      if (auth.currentUser.displayName !== name) {
+        await updateProfile(auth.currentUser, { displayName: name });
         await updateDoc(userRef, { displayName: name });
+        toast.success("Name updated");
+      }
+      if (auth.currentUser.email !== email) {
+        await updateEmail(auth.currentUser, email);
+        await updateDoc(userRef, { email });
+        toast.success("E-mail updated");
       }
     } catch (error) {
       toast.error("Could not update profile details");
@@ -113,15 +117,16 @@ export const Profile = () => {
       <main>
         <div className="profileDetailsHeader">
           <p className="profileDetailsText">Personal Details</p>
-          <p
+          <button
             className="changePersonalDetails"
             onClick={() => {
               changeDetails && onSubmit();
               setChangeDetails((prevState) => !prevState);
             }}
+            type="button"
           >
             {changeDetails ? "done" : "change"}
-          </p>
+          </button>
         </div>
 
         <div className="profileCard">
@@ -135,7 +140,7 @@ export const Profile = () => {
               onChange={onChange}
             />
             <input
-              type="text"
+              type="email"
               id="email"
               className={!changeDetails ? "profileEmail" : "profileEmailActive"}
               disabled={!changeDetails}
