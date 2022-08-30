@@ -11,6 +11,7 @@ import {
   orderBy,
   deleteDoc,
 } from "firebase/firestore";
+import { getStorage, ref, deleteObject } from "firebase/storage";
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
 import arrowRight from "../assets/svg/keyboardArrowRightIcon.svg";
@@ -67,9 +68,21 @@ export const Profile = () => {
   const onEdit = (id: string) => {
     navigate(`/edit-listing/${id}`);
   };
-  // FIXME: just delete firestore, not storage. images are not deleted.
+
   const onDelete = async (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
+      const storage = getStorage();
+      const imagesToDelete = listings.filter((listing) => listing.id === id);
+      const imageUrls = imagesToDelete[0].data.imgUrls;
+      Array.from(imageUrls).forEach(async (image) => {
+        try {
+          const desertRef = ref(storage, String(image));
+          await deleteObject(desertRef);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+
       await deleteDoc(doc(db, "listings", id));
       const updatedListings = listings.filter((listing) => listing.id !== id);
       setListings(updatedListings);
