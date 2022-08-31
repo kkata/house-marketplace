@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, updateDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { listingsConverter, storeImage } from "../utils";
 import { FormDataType, ListingsItemDataType } from "../type";
 import { ListingForm } from "../components/ListingForm";
+import { deleteObject, getStorage, ref } from "firebase/storage";
 
 const initialFormState: FormDataType = {
   type: "rent",
@@ -25,6 +26,8 @@ const initialFormState: FormDataType = {
   userRef: "",
 };
 
+const storage = getStorage();
+
 export const EditListing = () => {
   // handle geolocation input is not implemented
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -34,14 +37,14 @@ export const EditListing = () => {
 
   const [formData, setFormData] = useState<FormDataType>(initialFormState);
 
-  const {
-    address,
-    regularPrice,
-    discountedPrice,
-    images,
-    latitude,
-    longitude,
-  } = formData;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [uploadedImages, setUploadedImages] = useState<
+    ListingsItemDataType["imgUrls"]
+  >([]);
+
+  const { address, regularPrice, discountedPrice, latitude, longitude } =
+    formData;
 
   const auth = getAuth();
   const navigate = useNavigate();
@@ -72,10 +75,10 @@ export const EditListing = () => {
         setFormData({
           ...docSnapshot.data(),
           address: docSnapshot.data().location,
-          images: docSnapshot.data().imgUrls,
           latitude: docSnapshot.data().geolocation.lat,
           longitude: docSnapshot.data().geolocation.lng,
         });
+        setUploadedImages(docSnapshot.data().imgUrls);
         setLoading(false);
       } else {
         navigate("/");
@@ -101,7 +104,8 @@ export const EditListing = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (images === undefined) {
+    if (!uploadedImages.length) {
+      toast.error("Please upload at least one image");
       return;
     }
     if (!params.listingId) {
@@ -116,7 +120,7 @@ export const EditListing = () => {
       return;
     }
 
-    if (images.length > 6) {
+    if (uploadedImages.length > 6) {
       setLoading(false);
       toast.error("Maximum 6 images allowed");
       return;
@@ -145,23 +149,14 @@ export const EditListing = () => {
       }
     }
 
-    const imgUrls = await Promise.all(
-      Array.from(images).map((image) => storeImage(image))
-    ).catch(() => {
-      setLoading(false);
-      toast.error("Error uploading images");
-      return;
-    });
-
     const formDataCopy = {
       ...formData,
-      imgUrls,
+      imgUrls: uploadedImages,
       geolocation: _geolocation,
       timestamp: serverTimestamp(),
     };
 
     formDataCopy.location = address;
-    delete formDataCopy.images;
     delete formDataCopy.address;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
 
@@ -187,21 +182,60 @@ export const EditListing = () => {
       toggleFlag = false;
     }
 
-    // Files
-    if (e.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        images: e.target.files as FileList,
-      }));
-    }
-
     // Text, Boolean, Number
-    if (!e.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        [e.target.id]: toggleFlag ?? e.target.value,
-      }));
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: toggleFlag ?? e.target.value,
+    }));
+  };
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList) return;
+
+    setLoading(true);
+
+    const urls = await Promise.all(
+      Array.from(fileList).map((image) => storeImage(image))
+    ).catch(() => {
+      console.error("Error uploading images");
+      setLoading(false);
+      return;
+    });
+
+    if (urls) {
+      setUploadedImages((prevState) => {
+        return [...prevState, ...urls];
+      });
     }
+    setLoading(false);
+  };
+
+  const handleUpload = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    inputRef.current?.click();
+  };
+
+  const handleDeleteImage = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    const targetUrl = e.currentTarget.dataset.url;
+    const targetImageRef = ref(storage, targetUrl);
+
+    deleteObject(targetImageRef)
+      .then(() => {
+        setUploadedImages((prevState) =>
+          prevState.filter((url) => url !== targetUrl)
+        );
+        console.log("File deleted successfully");
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Uh-oh, an error occurred!");
+        setLoading(false);
+      });
   };
 
   if (loading) {
@@ -209,12 +243,23 @@ export const EditListing = () => {
   }
 
   return (
-    <ListingForm
-      ActionText="Edit"
-      formData={formData}
-      onMutate={onMutate}
-      onSubmit={onSubmit}
-      geolocationEnabled={geolocationEnabled}
-    />
+    <div className="profile">
+      <header>
+        <p className="pageHeader">Edit Listing</p>
+      </header>
+      <main>
+        <ListingForm
+          formData={formData}
+          onMutate={onMutate}
+          onSubmit={onSubmit}
+          handleChange={handleChange}
+          handleUpload={handleUpload}
+          handleDeleteImage={handleDeleteImage}
+          uploadedImages={uploadedImages}
+          inputRef={inputRef}
+          geolocationEnabled={geolocationEnabled}
+        />
+      </main>
+    </div>
   );
 };

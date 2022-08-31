@@ -121,7 +121,7 @@ export const storeImage = async (image: File): Promise<string> => {
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
+        console.log(`${image.name}: Upload is ${progress}% done`);
         switch (snapshot.state) {
           case "paused":
             console.log("Upload is paused");
@@ -135,8 +135,8 @@ export const storeImage = async (image: File): Promise<string> => {
         reject(error);
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          resolve(downloadURL);
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
+          resolve(downloadUrl);
         });
       }
     );
