@@ -247,7 +247,11 @@ export const ListingForm = ({
       )}
 
       <label className="formLabel">Images</label>
-      <p className="imagesInfo">The first image will be the cover (max 6).</p>
+      <p className="imagesInfo">
+        The first image will be the cover (max 6).
+        <br />
+        Each image must be under 2MB.
+      </p>
 
       <input
         type="file"
