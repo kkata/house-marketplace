@@ -16,12 +16,16 @@ import { ListingItem } from "../components/ListingItem";
 import { ListingsItemType } from "../type";
 import { listingsItemConverter } from "../utils";
 
+const PER_PAGE = 10;
+let sizeAllListings: number;
+let sizeDisplayedListings: number;
+
 export const Offers = () => {
   const [listings, setListings] = useState<ListingsItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastFetchedListing, setLastFetchedListing] =
     useState<QueryDocumentSnapshot>();
-  const [isListedAll, setIsListedAll] = useState(true); // FIXME: when the last listing is fetched, set this to false
+  const [isListedAll, setIsListedAll] = useState(true);
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -33,18 +37,29 @@ export const Offers = () => {
           listingRef,
           where("offer", "==", true),
           orderBy("timestamp", "desc"),
-          limit(10)
+          limit(PER_PAGE)
         );
         const querySnap = await getDocs(q);
+
+        const queryAll = query(listingRef, where("offer", "==", true));
+        const querySnapAll = await getDocs(queryAll);
+        sizeAllListings = querySnapAll.size;
 
         const lastVisible = querySnap.docs[querySnap.docs.length - 1];
 
         setLastFetchedListing(lastVisible);
 
         const listings = querySnap.docs.map((doc) => doc.data());
+        sizeDisplayedListings = querySnap.size;
 
         setListings(listings);
-        setIsListedAll(querySnap.empty);
+
+        if (sizeAllListings <= PER_PAGE) {
+          setIsListedAll(true);
+        } else {
+          setIsListedAll(false);
+        }
+
         setLoading(false);
       } catch (error) {
         toast.error("Could not fetch listings");
@@ -64,7 +79,7 @@ export const Offers = () => {
         where("offer", "==", true),
         orderBy("timestamp", "desc"),
         startAfter(lastFetchedListing),
-        limit(10)
+        limit(PER_PAGE)
       );
       const querySnap = await getDocs(q);
 
@@ -73,9 +88,16 @@ export const Offers = () => {
       setLastFetchedListing(lastVisible);
 
       const listings = querySnap.docs.map((doc) => doc.data());
+      sizeDisplayedListings += querySnap.size;
 
       setListings((prevListings) => [...prevListings, ...listings]);
-      setIsListedAll(querySnap.empty);
+
+      if (sizeDisplayedListings < sizeAllListings) {
+        setIsListedAll(false);
+      } else {
+        setIsListedAll(true);
+      }
+
       setLoading(false);
     } catch (error) {
       toast.error("Could not fetch listings");
