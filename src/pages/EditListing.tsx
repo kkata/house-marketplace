@@ -27,11 +27,10 @@ const initialFormState: FormDataType = {
 };
 
 const storage = getStorage();
+// handle geolocation input is not implemented
+const geolocationEnabled = true;
 
 export const EditListing = () => {
-  // handle geolocation input is not implemented
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [listing, setListing] = useState<ListingsItemDataType>();
 
@@ -132,21 +131,24 @@ export const EditListing = () => {
     };
 
     if (geolocationEnabled) {
-      const response = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_POSITIONSTACK_API_KEY}&query=${address}`
-      );
-      const data = await response.json();
-
-      _geolocation.lat = data.data[0]?.latitude ?? 0;
-      _geolocation.lng = data.data[0]?.longitude ?? 0;
-
-      const _location = data.data[0] ? data.data[0]?.label : undefined;
-
-      if (_location === undefined || _location.includes("undefined")) {
-        setLoading(false);
-        toast.error("Please enter a correct address");
-        return;
-      }
+      await fetch(
+        `https://us1.locationiq.com/v1/search?key=${process.env.REACT_APP_LOCATIONIQ_API_KEY}&q=${address}&format=json`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.error) {
+            console.error("Geolocation not found");
+            setLoading(false);
+            toast.error("Please enter a correct address");
+            return;
+          }
+          // data[0] is the first result. It would be the most accurate geolocation.
+          _geolocation.lat = parseFloat(data[0].lat);
+          _geolocation.lng = parseFloat(data[0].lon);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     }
 
     const formDataCopy = {

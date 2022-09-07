@@ -3,4 +3,4 @@
 - [Create React App](https://create-react-app.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Firebase](https://console.firebase.google.com/)
-- [positionstack](https://positionstack.com/)
+- [LocationIQ](https://locationiq.com/)
