@@ -16,7 +16,7 @@ import { ListingItem } from "../components/ListingItem";
 import { ListingsItemType } from "../type";
 import { listingsItemConverter } from "../utils";
 
-const PER_PAGE = 10;
+const PER_PAGE = 5;
 let sizeAllListings: number;
 let sizeDisplayedListings: number;
 
@@ -25,7 +25,7 @@ export const Offers = () => {
   const [loading, setLoading] = useState(true);
   const [lastFetchedListing, setLastFetchedListing] =
     useState<QueryDocumentSnapshot>();
-  const [isListedAll, setIsListedAll] = useState(true);
+  const [isListedAll, setIsListedAll] = useState(false);
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -92,10 +92,10 @@ export const Offers = () => {
 
       setListings((prevListings) => [...prevListings, ...listings]);
 
-      if (sizeDisplayedListings < sizeAllListings) {
-        setIsListedAll(false);
-      } else {
+      if (sizeDisplayedListings === sizeAllListings) {
         setIsListedAll(true);
+      } else {
+        setIsListedAll(false);
       }
 
       setLoading(false);
@@ -112,7 +112,7 @@ export const Offers = () => {
 
       {loading ? (
         <Spinner />
-      ) : listings && listings.length > 0 ? (
+      ) : listings.length > 0 ? (
         <>
           <main>
             <ul className="categoryListings">
